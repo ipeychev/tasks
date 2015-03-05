@@ -1,6 +1,7 @@
 'use strict';
 
 var del = require('del');
+var gitmodified = require('gulp-gitmodified');
 var GlobalsFormatter = require('es6-module-transpiler-globals-formatter');
 var gulp = require('gulp');
 var gutil = require('gulp-util');
@@ -14,6 +15,7 @@ var plugins = require('gulp-load-plugins')();
 var renamer = require('gulp-es6-imports-renamer');
 var runSequence = require('run-sequence');
 var sourcemaps = require('gulp-sourcemaps');
+var symlink = require('gulp-sym');
 var to5 = require('gulp-6to5');
 var transpile = require('gulp-es6-module-transpiler');
 
@@ -72,6 +74,14 @@ module.exports = function(options) {
       .pipe(gulp.dest('build'));
   });
 
+  gulp.task('hooks', function() {
+    return gulp.src(['.git-hooks/pre-commit', '.git-hooks/post-merge'])
+      .pipe(symlink(['.git/hooks/pre-commit', '.git/hooks/post-merge'], {
+        relative: true,
+        force: true
+      }));
+  });
+
   gulp.task('jspm', function(done) {
     jspm.promptDefaults(true);
     jspm.install(true, {
@@ -92,6 +102,7 @@ module.exports = function(options) {
 
   gulp.task('lint', function() {
     return gulp.src(['src/**/*.js', 'test/**/*.js'])
+      .pipe(gitmodified('modified'))
       .pipe(plugins.jshint())
       .pipe(plugins.jshint.reporter(require('jshint-stylish')));
   });

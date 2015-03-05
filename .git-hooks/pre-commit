@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+git diff --cached --name-only --diff-filter=ACM | grep '.js$' >/dev/null 2>&1
+
+if [[ $? == 0 ]]; then
+    gulp lint
+fi
+
+exit $?
